@@ -131,8 +131,9 @@ public class FileUploadService {
 		Optional<User> users = userRepo.findById(userId);
 		if (users.isPresent()) {
 			List<String> files=Arrays.asList(users.get().getUserProfileName(),users.get().getUserVideoName());
-			ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream("myfile.zip"));
+			ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(imageLocation + "/" +"myfile.zip"));
 			for (String file : files) {
+				if(file!=null) {
 				File image = new File(imageLocation + "/" + file);
 		        zipOutputStream.putNextEntry(new ZipEntry(image.getName()));
 		        FileInputStream inputStream = new FileInputStream(image);
@@ -142,9 +143,13 @@ public class FileUploadService {
 		            zipOutputStream.write(buffer, 0, length);
 		        }
 		        inputStream.close();
+				}
 			}
+			zipOutputStream.close();
+			File image = new File(imageLocation + "/" + "myfile.zip");
+			InputStreamResource resource = new InputStreamResource(new FileInputStream(image));
 			return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION)
-					.contentType(MediaType.parseMediaType("application/zip")).body(zipOutputStream);
+					.contentType(MediaType.parseMediaType("application/octet-stream")).body(resource);
 		} else {
 			response.setMessage("user id  not present in database");
 			return ResponseEntity.ok().body(response);
